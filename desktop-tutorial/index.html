@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#4a90e2" />
+<title>猫の体調管理アプリ Ultimate</title>
+<link rel="manifest" href="manifest.json" />
+<style>
+:root {
+--bg: #f6f9ff;
+--card: #ffffff;
+--text: #263238;
+--sub: #5f6b73;
+--border: #d9e2ec;
+--primary: #4a90e2;
+--primary-strong: #2f6fc7;
+--success: #27ae60;
+--warning: #f39c12;
+--danger: #e74c3c;
+--purple: #8b5cf6;
+--tab-bg: rgba(255,255,255,0.94);
+--tab-active: #4a90e2;
+--tab-text: #667085;
+--tab-active-text: #fff;
+--shadow: 0 10px 24px rgba(34, 62, 105, 0.08);
+--hero-grad: linear-gradient(180deg, #fffaf2 0%, #fff3df 100%);
+--input-bg: #fff;
+--chip-bg: #ffe8bd;
+--chip-text: #7a4f13;
+--good-row: rgba(39, 174, 96, 0.10);
+--normal-row: rgba(243, 156, 18, 0.10);
+--bad-row: rgba(231, 76, 60, 0.10);
+--canvas-bg: transparent;
+}
+body.dark {
+--bg: #0f1724;
+--card: #1f2937;
+--text: #f3f4f6;
+--sub: #cbd5e1;
+--border: #3e4a5d;
+--primary: #60a5fa;
+--primary-strong: #3b82f6;
+--success: #22c55e;
+--warning: #f59e0b;
+--danger: #ef4444;
+--purple: #a78bfa;
+--tab-bg: rgba(31,41,55,0.95);
+--tab-active: #2563eb;
+--tab-text: #d1d5db;
+--tab-active-text: #fff;
+--shadow: 0 10px 24px rgba(0,0,0,0.28);
+--hero-grad: linear-gradient(180deg, #2b3442 0%, #1f2937 100%);
+--input-bg: #111827;
+--chip-bg: #374151;
+--chip-text: #f9fafb;
+--good-row: rgba(34, 197, 94, 0.14);
+--normal-row: rgba(245, 158, 11, 0.14);
+--bad-row: rgba(239, 68, 68, 0.14);
+--canvas-bg: transparent;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+margin: 0; font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+background: var(--bg); color: var(--text); padding-bottom: 96px;
+}
+.container { max-width: 1180px; margin: 0 auto; padding: 16px; }
+.topbar {
+display: flex; justify-content: space-between; align-items: center;
+gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+}
+h1 { margin: 0; font-size: 28px; }
+h2 { margin: 0 0 14px; font-size: 22px; }
+.top-actions, .button-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.hero, .card {
+background: var(--card); border: 1px solid var(--border);
+border-radius: 20px; box-shadow: var(--shadow); padding: 16px; margin-bottom: 16px;
+}
+.hero { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: center; }
+.cat-area {
+min-height: 250px; border-radius: 18px; background: var(--hero-grad);
+display: flex; justify-content: center; align-items: center; overflow: hidden;
+}
+.cat-svg { width: 220px; height: auto; display: block; transform-origin: center bottom; }
+.face-part { transition: opacity .2s ease; }
+.hidden-face { opacity: 0; pointer-events: none; }
+.blink { animation: blink 4s infinite; transform-origin: center center; }
+@keyframes blink { 0%, 90%, 100% { transform: scaleY(1);} 95% { transform: scaleY(0.08);} }
+.jump { animation: jump .55s ease; }
+@keyframes jump {
+0% { transform: translateY(0); } 30% { transform: translateY(-18px); }
+60% { transform: translateY(0); } 100% { transform: translateY(-4px); }
+}
+.chip {
+display: inline-block; padding: 6px 12px; border-radius: 999px;
+background: var(--chip-bg); color: var(--chip-text); font-size: 13px; font-weight: bold; margin-bottom: 10px;
+}
+.message-box {
+border: 1px dashed var(--primary); background: rgba(74, 144, 226, 0.08);
+border-radius: 14px; padding: 14px; line-height: 1.7;
+}
+.grid-2, .grid-3, .grid-4 { display: grid; gap: 14px; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.full { grid-column: 1 / -1; }
+.form-group { display: flex; flex-direction: column; }
+label { font-weight: bold; margin-bottom: 6px; }
+input, select, textarea, button { font-size: 16px; }
+input, select, textarea {
+width: 100%; padding: 10px 12px; border-radius: 12px;
+border: 1px solid var(--border); background: var(--input-bg); color: var(--text);
+}
+textarea { min-height: 100px; resize: vertical; }
+.symptom-box, .quick-box {
+border: 1px solid var(--border); border-radius: 14px; padding: 12px;
+display: flex; flex-wrap: wrap; gap: 10px 14px;
+}
+.symptom-box label, .quick-box label {
+margin: 0; font-weight: normal; display: flex; align-items: center; gap: 6px;
+}
+.btn {
+border: none; border-radius: 12px; padding: 11px 14px;
+font-weight: bold; cursor: pointer;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-strong); }
+.btn-secondary { background: #6b7280; color: white; }
+.btn-success { background: var(--success); color: white; }
+.btn-warning { background: var(--warning); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-purple { background: var(--purple); color: white; }
+.summary-card { border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+.summary-card strong { display: block; color: var(--sub); font-size: 13px; margin-bottom: 6px; }
+.summary-card span { font-size: 24px; font-weight: bold; }
+.filter-row {
+display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 14px;
+}
+.filter-item { min-width: 170px; flex: 1; }
+.badge {
+display: inline-block; padding: 4px 10px; border-radius: 999px;
+color: white; font-size: 12px; font-weight: bold;
+}
+.badge-good { background: var(--success); }
+.badge-normal { background: var(--warning); }
+.badge-bad { background: var(--danger); }
+.table-wrap, .chart-wrap { overflow-x: auto; }
+table { width: 100%; min-width: 1100px; border-collapse: collapse; }
+th, td { border: 1px solid var(--border); padding: 10px; text-align: center; vertical-align: middle; }
+thead { background: var(--primary); color: white; }
+.row-good { background: var(--good-row); }
+.row-normal { background: var(--normal-row); }
+.row-bad { background: var(--bad-row); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+canvas {
+width: 100%; max-width: 100%; border: 1px solid var(--border);
+border-radius: 14px; background: var(--canvas-bg); margin-bottom: 12px;
+}
+.notice { margin-top: 8px; color: var(--sub); font-size: 13px; line-height: 1.7; }
+.install-box {
+display: none; align-items: center; justify-content: space-between; gap: 10px;
+padding: 12px 14px; border-radius: 14px; border: 1px dashed var(--primary);
+background: rgba(74, 144, 226, 0.08); margin-bottom: 16px;
+}
+.install-box.show { display: flex; }
+.ranking-list { margin: 0; padding-left: 18px; line-height: 1.9; }
+.section-title-row {
+display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;
+}
+.bottom-tabs {
+position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%);
+width: min(95%, 980px); display: grid; grid-template-columns: repeat(7, 1fr);
+gap: 8px; padding: 10px; background: var(--tab-bg); border: 1px solid var(--border);
+border-radius: 18px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 999;
+}
+.tab-btn {
+border: none; border-radius: 14px; background: transparent; color: var(--tab-text);
+padding: 10px 6px; display: flex; flex-direction: column; align-items: center;
+gap: 4px; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+.tab-btn .icon { font-size: 18px; line-height: 1; }
+.tab-btn.active { background: var(--tab-active); color: var(--tab-active-text); }
+@media (max-width: 900px) {
+.hero, .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+.bottom-tabs { width: calc(100% - 14px); grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 640px) {
+body { padding-bottom: 122px; }
+.container { padding: 12px; }
+h1 { font-size: 24px; }
+.tab-btn { font-size: 10px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="topbar">
+<h1>猫の体調管理アプリ Ultimate</h1>
+<div class="top-actions">
+<button id="themeToggleBtn" class="btn btn-primary">🌙 ダークモード</button>
+<button id="printBtn" class="btn btn-secondary" type="button">🖨 印刷</button>
+</div>
+</div>
+
+<div id="installBox" class="install-box">
+<div>ホーム画面に追加してアプリっぽく使えます。</div>
+<button id="installBtn" class="btn btn-primary">インストール</button>
+</div>
+
+<section class="hero">
+<div class="cat-area">
+<svg class="cat-svg" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg" aria-label="猫のイラスト">
+<path d="M205 185 C240 165, 242 220, 205 222" fill="none" stroke="#d69a63" stroke-width="14" stroke-linecap="round"/>
+<polygon points="70,55 98,20 112,72" fill="#d69a63"/>
+<polygon points="148,72 162,20 190,55" fill="#d69a63"/>
+<polygon points="81,55 98,34 107,67" fill="#f6c7c0"/>
+<polygon points="153,67 162,34 179,55" fill="#f6c7c0"/>
+<circle cx="130" cy="105" r="62" fill="#d69a63"/>
+<circle cx="108" cy="97" r="2.2" fill="#ffffff"/>
+<circle cx="158" cy="97" r="2.2" fill="#ffffff"/>
+<g id="face-normal-eyes" class="face-part blink">
+<ellipse cx="105" cy="102" rx="8" ry="12" fill="#2f2f2f"/>
+<ellipse cx="155" cy="102" rx="8" ry="12" fill="#2f2f2f"/>
+</g>
+<g id="face-good-eyes" class="face-part hidden-face blink">
+<path d="M95 103 Q105 92 115 103" fill="none" stroke="#2f2f2f" stroke-width="4" stroke-linecap="round"/>
+<path d="M145 103 Q155 92 165 103" fill="none" stroke="#2f2f2f" stroke-width="4" stroke-linecap="round"/>
+</g>
+<g id="face-bad-eyes" class="face-part hidden-face blink">
+<path d="M95 97 Q105 107 115 97" fill="none" stroke="#2f2f2f" stroke-width="4" stroke-linecap="round"/>
+<path d="M145 97 Q155 107 165 97" fill="none" stroke="#2f2f2f" stroke-width="4" stroke-linecap="round"/>
+</g>
+<g id="face-fever-eyes" class="face-part hidden-face">
+<line x1="96" y1="101" x2="114" y2="105" stroke="#2f2f2f" stroke-width="4" stroke-linecap="round"/>
+<line x1="146" y1="105" x2="164" y2="101" stroke="#2f2f2f" stroke-width="4" stroke-linecap="round"/>
+</g>
+<polygon points="130,118 122,127 138,127" fill="#d87c8a"/>
+<g id="mouth-normal" class="face-part">
+<path d="M130 128 Q122 137 116 138" fill="none" stroke="#6b4a2c" stroke-width="3" stroke-linecap="round"/>
+<path d="M130 128 Q138 137 144 138" fill="none" stroke="#6b4a2c" stroke-width="3" stroke-linecap="round"/>
+</g>
+<g id="mouth-good" class="face-part hidden-face">
+<path d="M114 132 Q130 147 146 132" fill="none" stroke="#6b4a2c" stroke-width="4" stroke-linecap="round"/>
+</g>
+<g id="mouth-bad" class="face-part hidden-face">
+<path d="M116 142 Q130 129 144 142" fill="none" stroke="#6b4a2c" stroke-width="4" stroke-linecap="round"/>
+</g>
+<g id="mouth-fever" class="face-part hidden-face">
+<ellipse cx="130" cy="138" rx="8" ry="10" fill="#6b4a2c"/>
+</g>
+<g id="fever-sweat" class="face-part hidden-face">
+<path d="M176 78 C182 66, 192 78, 184 90 C180 95, 172 90, 176 78Z" fill="#7ec8ff"/>
+</g>
+<line x1="90" y1="126" x2="50" y2="118" stroke="#6b4a2c" stroke-width="3" stroke-linecap="round"/>
+<line x1="90" y1="132" x2="50" y2="134" stroke="#6b4a2c" stroke-width="3" stroke-linecap="round"/>
+<line x1="170" y1="126" x2="210" y2="118" stroke="#6b4a2c" stroke-width="3" stroke-linecap="round"/>
+<line x1="170" y1="132" x2="210" y2="134" stroke="#6b4a2c" stroke-width="3" stroke-linecap="round"/>
+<ellipse cx="130" cy="195" rx="68" ry="52" fill="#d69a63"/>
+<ellipse cx="130" cy="204" rx="34" ry="28" fill="#f7dfbf"/>
+<ellipse cx="102" cy="232" rx="15" ry="10" fill="#c88a56"/>
+<ellipse cx="158" cy="232" rx="15" ry="10" fill="#c88a56"/>
+<path d="M128 58 Q116 74 128 84" fill="none" stroke="#b87543" stroke-width="6" stroke-linecap="round"/>
+<path d="M112 66 Q100 80 112 92" fill="none" stroke="#b87543" stroke-width="6" stroke-linecap="round"/>
+<path d="M144 66 Q156 80 144 92" fill="none" stroke="#b87543" stroke-width="6" stroke-linecap="round"/>
+</svg>
+</div>
+<div>
+<div id="catStatus" class="chip">ふつうモード</div>
+<div id="catMessage" class="message-box">今日はどんな体調だったか、記録してみようにゃ。</div>
+</div>
+</section>
+
+<section id="section-form" class="card">
+<div class="section-title-row">
+<h2 id="formTitle">体調を記録する</h2>
+<div class="button-row" style="margin-top:0;">
+<button id="todayFillBtn" class="btn btn-secondary" type="button">今日の日付</button>
+</div>
+</div>
+
+<div class="grid-2">
+<div class="form-group">
+<label for="date">日付</label>
+<input type="date" id="date" />
+</div>
+<div class="form-group">
+<label for="temperature">体温（℃）</label>
+<input type="number" id="temperature" step="0.1" placeholder="例: 36.5" />
+</div>
+<div class="form-group">
+<label for="condition">体調</label>
+<select id="condition">
+<option value="">選択してください</option>
+<option value="良い">良い</option>
+<option value="普通">普通</option>
+<option value="悪い">悪い</option>
+</select>
+</div>
+<div class="form-group">
+<label for="sleep">睡眠時間</label>
+<input type="number" id="sleep" step="0.1" placeholder="例: 7" />
+</div>
+<div class="form-group full">
+<label>今日のクイック状態</label>
+<div class="quick-box">
+<label><input type="radio" name="quickCondition" value="良い"> 元気</label>
+<label><input type="radio" name="quickCondition" value="普通"> まあまあ</label>
+<label><input type="radio" name="quickCondition" value="悪い"> しんどい</label>
+</div>
+</div>
+<div class="form-group full">
+<label>服薬チェック</label>
+<div class="symptom-box">
+<label><input type="checkbox" id="morningMed" /> 朝飲んだ</label>
+<label><input type="checkbox" id="noonMed" /> 昼飲んだ</label>
+<label><input type="checkbox" id="nightMed" /> 夜飲んだ</label>
+</div>
+</div>
+<div class="form-group full">
+<label>症状チェック</label>
+<div class="symptom-box" id="symptomBox">
+<label><input type="checkbox" value="頭痛" /> 頭痛</label>
+<label><input type="checkbox" value="だるさ" /> だるさ</label>
+<label><input type="checkbox" value="吐き気" /> 吐き気</label>
+<label><input type="checkbox" value="発熱" /> 発熱</label>
+<label><input type="checkbox" value="咳" /> 咳</label>
+<label><input type="checkbox" value="喉の痛み" /> 喉の痛み</label>
+<label><input type="checkbox" value="腹痛" /> 腹痛</label>
+<label><input type="checkbox" value="めまい" /> めまい</label>
+<label><input type="checkbox" value="不安感" /> 不安感</label>
+<label><input type="checkbox" value="食欲低下" /> 食欲低下</label>
+</div>
+</div>
+<div class="form-group full">
+<label for="newSymptom">カスタム症状を追加</label>
+<div class="button-row" style="margin-top:0;">
+<input type="text" id="newSymptom" placeholder="例: 鼻水" style="flex:1;" />
+<button id="addSymptomBtn" class="btn btn-secondary" type="button">追加</button>
+</div>
+</div>
+<div class="form-group full">
+<label for="memo">メモ</label>
+<textarea id="memo" placeholder="体調、服薬、出来事などを入力"></textarea>
+</div>
+</div>
+
+<div class="button-row">
+<button id="saveBtn" class="btn btn-primary">保存</button>
+<button id="cancelEditBtn" class="btn btn-secondary" type="button" style="display:none;">編集をキャンセル</button>
+</div>
+</section>
+
+<section id="section-reminder" class="card">
+<h2>通知・リマインド</h2>
+<div class="button-row" style="margin-top:0;">
+<button id="requestNotificationBtn" class="btn btn-purple" type="button">通知を許可する</button>
+<button id="testNotificationBtn" class="btn btn-secondary" type="button">テスト通知</button>
+</div>
+<div class="grid-3" style="margin-top:14px;">
+<div class="form-group">
+<label for="morningTime">朝の通知時刻</label>
+<input type="time" id="morningTime" value="08:00" />
+</div>
+<div class="form-group">
+<label for="noonTime">昼の通知時刻</label>
+<input type="time" id="noonTime" value="12:00" />
+</div>
+<div class="form-group">
+<label for="nightTime">夜の通知時刻</label>
+<input type="time" id="nightTime" value="20:00" />
+</div>
+</div>
+<div class="button-row">
+<button id="saveReminderBtn" class="btn btn-primary" type="button">通知時刻を保存</button>
+</div>
+<div class="notice">ブラウザ通知は端末やブラウザ仕様に左右されます。PWAとして使うと安定しやすいです。</div>
+</section>
+
+<section id="section-backup" class="card">
+<h2>保存・復元</h2>
+<div class="button-row" style="margin-top:0;">
+<button id="backupBtn" class="btn btn-success" type="button">JSONバックアップ</button>
+<button id="restoreBtn" class="btn btn-secondary" type="button">JSONから復元</button>
+<button id="clearAllBtn" class="btn btn-danger" type="button">全データ削除</button>
+</div>
+<input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none;" />
+<div class="notice">バックアップには記録・症状・通知設定・テーマ設定が含まれます。復元時は現在のデータを上書きします。</div>
+</section>
+
+<section id="section-summary" class="card">
+<h2>集計ダッシュボード</h2>
+<div class="filter-row">
+<div class="filter-item">
+<label for="monthFilter">月</label>
+<input type="month" id="monthFilter" />
+</div>
+<div class="filter-item">
+<label for="conditionFilter">体調</label>
+<select id="conditionFilter">
+<option value="">すべて</option>
+<option value="良い">良い</option>
+<option value="普通">普通</option>
+<option value="悪い">悪い</option>
+</select>
+</div>
+<div class="filter-item">
+<label for="keywordFilter">キーワード</label>
+<input type="text" id="keywordFilter" placeholder="メモ・症状検索" />
+</div>
+<div class="button-row" style="margin-top:0;">
+<button id="showAllBtn" class="btn btn-secondary" type="button">全件表示</button>
+<button id="exportBtn" class="btn btn-success" type="button">CSV出力</button>
+</div>
+</div>
+
+<div class="grid-4">
+<div class="summary-card"><strong>記録件数</strong><span id="totalCount">0</span></div>
+<div class="summary-card"><strong>平均体温</strong><span id="avgTemp">0℃</span></div>
+<div class="summary-card"><strong>平均睡眠時間</strong><span id="avgSleep">0時間</span></div>
+<div class="summary-card"><strong>悪い日数</strong><span id="badCount">0</span></div>
+<div class="summary-card"><strong>連続記録日数</strong><span id="streakCount">0日</span></div>
+<div class="summary-card"><strong>服薬達成率</strong><span id="medRate">0%</span></div>
+<div class="summary-card"><strong>最高体温</strong><span id="maxTemp">0℃</span></div>
+<div class="summary-card"><strong>最低睡眠時間</strong><span id="minSleep">0時間</span></div>
+</div>
+</section>
+
+<section id="section-ranking" class="card">
+<h2>症状ランキング</h2>
+<ol id="symptomRanking" class="ranking-list"></ol>
+</section>
+
+<section id="section-chart" class="card">
+<h2>グラフ</h2>
+<div class="chart-wrap">
+<canvas id="tempChart" width="1000" height="320"></canvas>
+<canvas id="sleepChart" width="1000" height="320"></canvas>
+</div>
+</section>
+
+<section id="section-list" class="card">
+<div class="section-title-row">
+<h2>記録一覧</h2>
+<div class="button-row" style="margin-top:0;">
+<button id="sortNewestBtn" class="btn btn-secondary" type="button">新しい順</button>
+<button id="sortOldestBtn" class="btn btn-secondary" type="button">古い順</button>
+</div>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>日付</th>
+<th>体温</th>
+<th>体調</th>
+<th>睡眠</th>
+<th>服薬</th>
+<th>症状</th>
+<th>メモ</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody id="recordList"></tbody>
+</table>
+</div>
+</section>
+</div>
+
+<nav class="bottom-tabs" aria-label="下タブナビ">
+<button class="tab-btn active" data-target="section-form"><span class="icon">✍️</span><span>記録</span></button>
+<button class="tab-btn" data-target="section-reminder"><span class="icon">🔔</span><span>通知</span></button>
+<button class="tab-btn" data-target="section-backup"><span class="icon">💾</span><span>保存</span></button>
+<button class="tab-btn" data-target="section-summary"><span class="icon">📊</span><span>集計</span></button>
+<button class="tab-btn" data-target="section-ranking"><span class="icon">🏆</span><span>症状</span></button>
+<button class="tab-btn" data-target="section-chart"><span class="icon">📈</span><span>グラフ</span></button>
+<button class="tab-btn" data-target="section-list"><span class="icon">📋</span><span>一覧</span></button>
+</nav>
+
+<script>
+const STORAGE_KEYS = {
+records: "healthRecordsUltimate",
+theme: "healthThemeUltimate",
+reminder: "healthReminderUltimate",
+reminderLog: "healthReminderLogUltimate",
+customSymptoms: "healthCustomSymptomsUltimate"
+};
+
+const $ = (id) => document.getElementById(id);
+
+const dateInput = $("date");
+const temperatureInput = $("temperature");
+const conditionInput = $("condition");
+const sleepInput = $("sleep");
+const memoInput = $("memo");
+
+const morningMedInput = $("morningMed");
+const noonMedInput = $("noonMed");
+const nightMedInput = $("nightMed");
+const symptomBox = $("symptomBox");
+
+const saveBtn = $("saveBtn");
+const cancelEditBtn = $("cancelEditBtn");
+const todayFillBtn = $("todayFillBtn");
+const addSymptomBtn = $("addSymptomBtn");
+const newSymptomInput = $("newSymptom");
+
+const monthFilter = $("monthFilter");
+const conditionFilter = $("conditionFilter");
+const keywordFilter = $("keywordFilter");
+const showAllBtn = $("showAllBtn");
+const exportBtn = $("exportBtn");
+
+const totalCountEl = $("totalCount");
+const avgTempEl = $("avgTemp");
+const avgSleepEl = $("avgSleep");
+const badCountEl = $("badCount");
+const streakCountEl = $("streakCount");
+const medRateEl = $("medRate");
+const maxTempEl = $("maxTemp");
+const minSleepEl = $("minSleep");
+const symptomRankingEl = $("symptomRanking");
+const recordList = $("recordList");
+
+const catMessageEl = $("catMessage");
+const catStatusEl = $("catStatus");
+const catSvg = document.querySelector(".cat-svg");
+
+const tempCanvas = $("tempChart");
+const sleepCanvas = $("sleepChart");
+const tempCtx = tempCanvas.getContext("2d");
+const sleepCtx = sleepCanvas.getContext("2d");
+
+const themeToggleBtn = $("themeToggleBtn");
+const printBtn = $("printBtn");
+const installBox = $("installBox");
+const installBtn = $("installBtn");
+const requestNotificationBtn = $("requestNotificationBtn");
+const testNotificationBtn = $("testNotificationBtn");
+const saveReminderBtn = $("saveReminderBtn");
+const morningTimeInput = $("morningTime");
+const noonTimeInput = $("noonTime");
+const nightTimeInput = $("nightTime");
+const backupBtn = $("backupBtn");
+const restoreBtn = $("restoreBtn");
+const clearAllBtn = $("clearAllBtn");
+const restoreFileInput = $("restoreFileInput");
+const sortNewestBtn = $("sortNewestBtn");
+const sortOldestBtn = $("sortOldestBtn");
+const formTitle = $("formTitle");
+
+const tabButtons = document.querySelectorAll(".tab-btn");
+const sections = [
+$("section-form"), $("section-reminder"), $("section-backup"),
+$("section-summary"), $("section-ranking"), $("section-chart"), $("section-list")
+];
+
+let deferredPrompt = null;
+let sortMode = "newest";
+let editIndex = null;
+let records = JSON.parse(localStorage.getItem(STORAGE_KEYS.records)) || [];
+let customSymptoms = JSON.parse(localStorage.getItem(STORAGE_KEYS.customSymptoms)) || [];
+
+function escapeHtml(text) {
+return String(text)
+.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+.replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+.replace(/'/g, "&#039;");
+}
+
+function getTodayString() {
+return new Date().toISOString().split("T")[0];
+}
+
+function fillToday() {
+dateInput.value = getTodayString();
+}
+
+function resetQuickCondition() {
+document.querySelectorAll('input[name="quickCondition"]').forEach(r => r.checked = false);
+}
+
+function loadCustomSymptoms() {
+customSymptoms.forEach(symptom => appendCustomSymptom(symptom));
+}
+
+function appendCustomSymptom(symptom) {
+if (!symptom) return;
+const exists = [...symptomBox.querySelectorAll("input")].some(i => i.value === symptom);
+if (exists) return;
+const label = document.createElement("label");
+label.innerHTML = `<input type="checkbox" value="${escapeHtml(symptom)}" /> ${escapeHtml(symptom)}`;
+symptomBox.appendChild(label);
+label.querySelector("input").addEventListener("change", updateCatMessage);
+}
+
+function saveCustomSymptoms() {
+localStorage.setItem(STORAGE_KEYS.customSymptoms, JSON.stringify(customSymptoms));
+}
+
+function addCustomSymptom() {
+const value = newSymptomInput.value.trim();
+if (!value) return;
+if (customSymptoms.includes(value)) {
+alert("同じ症状は追加済みです。");
+return;
+}
+customSymptoms.push(value);
+saveCustomSymptoms();
+appendCustomSymptom(value);
+newSymptomInput.value = "";
+}
+
+function getSelectedSymptoms() {
+return [...symptomBox.querySelectorAll('input[type="checkbox"]:checked')].map(i => i.value);
+}
+
+function setSelectedSymptoms(symptoms) {
+symptomBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+cb.checked = symptoms.includes(cb.value);
+});
+}
+
+function saveRecords() {
+localStorage.setItem(STORAGE_KEYS.records, JSON.stringify(records));
+}
+
+function resetForm() {
+fillToday();
+temperatureInput.value = "";
+conditionInput.value = "";
+sleepInput.value = "";
+memoInput.value = "";
+morningMedInput.checked = false;
+noonMedInput.checked = false;
+nightMedInput.checked = false;
+setSelectedSymptoms([]);
+resetQuickCondition();
+editIndex = null;
+formTitle.textContent = "体調を記録する";
+saveBtn.textContent = "保存";
+cancelEditBtn.style.display = "none";
+updateCatMessage();
+}
+
+function applyTheme(theme) {
+if (theme === "dark") {
+document.body.classList.add("dark");
+themeToggleBtn.textContent = "☀️ ライトモード";
+} else {
+document.body.classList.remove("dark");
+themeToggleBtn.textContent = "🌙 ダークモード";
+}
+renderAll();
+}
+
+function loadTheme() {
+applyTheme(localStorage.getItem(STORAGE_KEYS.theme) || "light");
+}
+
+function toggleTheme() {
+const newTheme = document.body.classList.contains("dark") ? "light" : "dark";
+localStorage.setItem(STORAGE_KEYS.theme, newTheme);
+applyTheme(newTheme);
+}
+
+function getReminderSettings() {
+return JSON.parse(localStorage.getItem(STORAGE_KEYS.reminder)) || {
+morning: "08:00", noon: "12:00", night: "20:00"
+};
+}
+
+function loadReminderSettings() {
+const s = getReminderSettings();
+morningTimeInput.value = s.morning;
+noonTimeInput.value = s.noon;
+nightTimeInput.value = s.night;
+}
+
+function saveReminderSettings() {
+const s = {
+morning: morningTimeInput.value || "08:00",
+noon: noonTimeInput.value || "12:00",
+night: nightTimeInput.value || "20:00"
+};
+localStorage.setItem(STORAGE_KEYS.reminder, JSON.stringify(s));
+alert("通知時刻を保存しました。");
+}
+
+async function requestNotificationPermission() {
+if (!("Notification" in window)) {
+alert("このブラウザは通知に対応していません。");
+return;
+}
+const permission = await Notification.requestPermission();
+alert(permission === "granted" ? "通知を許可しました。" : "通知が許可されていません。");
+}
+
+function showLocalNotification(title, body) {
+if (!("Notification" in window) || Notification.permission !== "granted") return;
+navigator.serviceWorker?.getRegistration().then(reg => {
+if (reg) reg.showNotification(title, { body, tag: "health-reminder" });
+else new Notification(title, { body });
+});
+}
+
+function getReminderLog() {
+return JSON.parse(localStorage.getItem(STORAGE_KEYS.reminderLog)) || {};
+}
+
+function saveReminderLog(log) {
+localStorage.setItem(STORAGE_KEYS.reminderLog, JSON.stringify(log));
+}
+
+function getTodayRecord() {
+return records.find(r => r.date === getTodayString()) || null;
+}
+
+function shouldSkipReminder(slot) {
+const r = getTodayRecord();
+if (!r) return false;
+if (slot === "morning") return !!r.morningMed;
+if (slot === "noon") return !!r.noonMed;
+if (slot === "night") return !!r.nightMed;
+return false;
+}
+
+function checkReminder() {
+const settings = getReminderSettings();
+const now = new Date();
+const hhmm = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+const today = getTodayString();
+const log = getReminderLog();
+
+[
+{ key: "morning", label: "朝の服薬" },
+{ key: "noon", label: "昼の服薬" },
+{ key: "night", label: "夜の服薬" }
+].forEach(slot => {
+const sentKey = `${today}_${slot.key}`;
+if (settings[slot.key] === hhmm && !log[sentKey] && !shouldSkipReminder(slot.key)) {
+showLocalNotification("服薬リマインド", `${slot.label}の時間です。チェックを忘れずに。`);
+log[sentKey] = true;
+}
+});
+saveReminderLog(log);
+}
+
+function hideAllFaces() {
+[
+"face-normal-eyes", "face-good-eyes", "face-bad-eyes", "face-fever-eyes",
+"mouth-normal", "mouth-good", "mouth-bad", "mouth-fever", "fever-sweat"
+].forEach(id => $(id).classList.add("hidden-face"));
+}
+
+function setBlinkSpeed(mode) {
+document.querySelectorAll(".blink").forEach(el => {
+el.style.animationDuration = mode === "bad" ? "5s" : "3.5s";
+});
+}
+
+function showFace(mode) {
+hideAllFaces();
+if (mode === "good") {
+$("face-good-eyes").classList.remove("hidden-face");
+$("mouth-good").classList.remove("hidden-face");
+} else if (mode === "bad") {
+$("face-bad-eyes").classList.remove("hidden-face");
+$("mouth-bad").classList.remove("hidden-face");
+} else if (mode === "fever") {
+$("face-fever-eyes").classList.remove("hidden-face");
+$("mouth-fever").classList.remove("hidden-face");
+$("fever-sweat").classList.remove("hidden-face");
+} else {
+$("face-normal-eyes").classList.remove("hidden-face");
+$("mouth-normal").classList.remove("hidden-face");
+}
+setBlinkSpeed(mode);
+}
+
+function catJump() {
+catSvg.classList.remove("jump");
+void catSvg.offsetWidth;
+catSvg.classList.add("jump");
+setTimeout(() => catSvg.classList.remove("jump"), 550);
+}
+
+function updateCatMessage() {
+const condition = conditionInput.value;
+const sleep = Number(sleepInput.value);
+const temp = Number(temperatureInput.value);
+const symptoms = getSelectedSymptoms();
+const medsTaken = [morningMedInput.checked, noonMedInput.checked, nightMedInput.checked].filter(Boolean).length;
+
+let mode = "normal";
+let message = "今日はどんな体調だったか、記録してみようにゃ。";
+let status = "ふつうモード";
+
+if (condition === "良い") {
+mode = "good";
+message = "いい感じにゃ。調子が良くても無理しすぎないのが大事にゃ。";
+status = "ごきげんモード";
+} else if (condition === "普通") {
+message = "ふつうの日も大事にゃ。少しずつ整えていけば十分にゃ。";
+} else if (condition === "悪い") {
+mode = "bad";
+message = "しんどい日はがんばりすぎ禁止にゃ。休息優先でいくにゃ。";
+status = "しょんぼりモード";
+}
+
+if (!isNaN(temp) && temp >= 37.5) {
+mode = "fever";
+message = "熱が高めにゃ。今日はとにかく無理せず、しっかり休むにゃ。";
+status = "ぐったりモード";
+} else if (!isNaN(sleep) && sleep > 0 && sleep < 5) {
+if (condition !== "良い") mode = "bad";
+message = "睡眠が少なめにゃ。今日は早めに休めるといいにゃ。";
+status = "ねむねむモード";
+} else if (symptoms.length >= 3) {
+if (condition !== "良い") mode = "bad";
+message = "症状が多めにゃ。予定を詰め込みすぎない方がよさそうにゃ。";
+status = "注意モード";
+}
+
+if (medsTaken === 0) message += " 服薬チェックも忘れずにゃ。";
+
+catMessageEl.textContent = message;
+catStatusEl.textContent = status;
+showFace(mode);
+}
+
+function getFilteredRecords() {
+let filtered = [...records];
+const month = monthFilter.value;
+const cond = conditionFilter.value;
+const keyword = keywordFilter.value.trim().toLowerCase();
+
+if (month) filtered = filtered.filter(r => r.date.startsWith(month));
+if (cond) filtered = filtered.filter(r => r.condition === cond);
+if (keyword) {
+filtered = filtered.filter(r => {
+const memo = (r.memo || "").toLowerCase();
+const symptoms = (r.symptoms || []).join(" ").toLowerCase();
+return memo.includes(keyword) || symptoms.includes(keyword);
+});
+}
+
+filtered.sort((a, b) =>
+sortMode === "newest" ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date)
+);
+return filtered;
+}
+
+function calculateStreak(allRecords) {
+if (!allRecords.length) return 0;
+const dates = [...new Set(allRecords.map(r => r.date))].sort().reverse();
+let streak = 0;
+let cursor = new Date(getTodayString());
+
+for (const d of dates) {
+const cursorStr = cursor.toISOString().split("T")[0];
+if (d === cursorStr) {
+streak++;
+cursor.setDate(cursor.getDate() - 1);
+} else if (d > cursorStr) {
+continue;
+} else {
+break;
+}
+}
+return streak;
+}
+
+function updateSummary(filteredRecords) {
+const total = filteredRecords.length;
+const tempValues = filteredRecords.map(r => Number(r.temperature)).filter(v => !isNaN(v));
+const sleepValues = filteredRecords.map(r => Number(r.sleep)).filter(v => !isNaN(v));
+const badCount = filteredRecords.filter(r => r.condition === "悪い").length;
+const streak = calculateStreak(records);
+
+const avgTemp = tempValues.length ? (tempValues.reduce((a,b)=>a+b,0)/tempValues.length).toFixed(1) : 0;
+const avgSleep = sleepValues.length ? (sleepValues.reduce((a,b)=>a+b,0)/sleepValues.length).toFixed(1) : 0;
+const maxTemp = tempValues.length ? Math.max(...tempValues).toFixed(1) : 0;
+const minSleep = sleepValues.length ? Math.min(...sleepValues).toFixed(1) : 0;
+
+const medChecks = filteredRecords.reduce((sum, r) =>
+sum + (r.morningMed ? 1 : 0) + (r.noonMed ? 1 : 0) + (r.nightMed ? 1 : 0), 0);
+const possibleChecks = filteredRecords.length * 3;
+const medRate = possibleChecks ? Math.round((medChecks / possibleChecks) * 100) : 0;
+
+totalCountEl.textContent = total;
+avgTempEl.textContent = `${avgTemp}℃`;
+avgSleepEl.textContent = `${avgSleep}時間`;
+badCountEl.textContent = badCount;
+streakCountEl.textContent = `${streak}日`;
+medRateEl.textContent = `${medRate}%`;
+maxTempEl.textContent = `${maxTemp}℃`;
+minSleepEl.textContent = `${minSleep}時間`;
+}
+
+function updateSymptomRanking(filteredRecords) {
+const counts = {};
+filteredRecords.forEach(r => (r.symptoms || []).forEach(s => counts[s] = (counts[s] || 0) + 1));
+const ranking = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 10);
+symptomRankingEl.innerHTML = "";
+if (!ranking.length) {
+symptomRankingEl.innerHTML = "<li>まだデータがありません</li>";
+return;
+}
+ranking.forEach(([symptom, count]) => {
+const li = document.createElement("li");
+li.textContent = `${symptom}：${count}回`;
+symptomRankingEl.appendChild(li);
+});
+}
+
+function drawLineChart(ctx, canvas, recordsData, valueKey, label, color) {
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+const width = canvas.width, height = canvas.height, padding = 50;
+
+if (!recordsData.length) {
+ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--sub').trim();
+ctx.font = "20px sans-serif";
+ctx.fillText("データがありません", width / 2 - 80, height / 2);
+return;
+}
+
+const values = recordsData.map(r => Number(r[valueKey]));
+const labels = recordsData.map(r => r.date.slice(5));
+
+let minVal = Math.min(...values), maxVal = Math.max(...values);
+if (valueKey === "temperature") {
+minVal = Math.floor((minVal - 0.3) * 10) / 10;
+maxVal = Math.ceil((maxVal + 0.3) * 10) / 10;
+} else {
+minVal = Math.max(0, Math.floor(minVal - 1));
+maxVal = Math.ceil(maxVal + 1);
+}
+if (minVal === maxVal) { minVal -= 1; maxVal += 1; }
+
+const axisColor = getComputedStyle(document.body).getPropertyValue('--text').trim();
+const gridColor = getComputedStyle(document.body).getPropertyValue('--border').trim();
+
+ctx.strokeStyle = axisColor;
+ctx.lineWidth = 1;
+ctx.beginPath();
+ctx.moveTo(padding, padding);
+ctx.lineTo(padding, height - padding);
+ctx.lineTo(width - padding, height - padding);
+ctx.stroke();
+
+const steps = 5;
+for (let i = 0; i <= steps; i++) {
+const y = padding + ((height - padding * 2) / steps) * i;
+const value = maxVal - ((maxVal - minVal) / steps) * i;
+ctx.strokeStyle = gridColor;
+ctx.beginPath();
+ctx.moveTo(padding, y);
+ctx.lineTo(width - padding, y);
+ctx.stroke();
+ctx.fillStyle = axisColor;
+ctx.font = "12px sans-serif";
+ctx.fillText(value.toFixed(1), 8, y + 4);
+}
+
+const xStep = recordsData.length > 1 ? (width - padding * 2) / (recordsData.length - 1) : 0;
+
+ctx.strokeStyle = color;
+ctx.lineWidth = 2;
+ctx.beginPath();
+recordsData.forEach((r, i) => {
+const x = recordsData.length === 1 ? width / 2 : padding + xStep * i;
+const y = height - padding - ((Number(r[valueKey]) - minVal) / (maxVal - minVal)) * (height - padding * 2);
+if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+});
+ctx.stroke();
+
+recordsData.forEach((r, i) => {
+const x = recordsData.length === 1 ? width / 2 : padding + xStep * i;
+const y = height - padding - ((Number(r[valueKey]) - minVal) / (maxVal - minVal)) * (height - padding * 2);
+ctx.beginPath();
+ctx.fillStyle = color;
+ctx.arc(x, y, 4, 0, Math.PI * 2);
+ctx.fill();
+ctx.fillStyle = axisColor;
+ctx.font = "11px sans-serif";
+ctx.fillText(labels[i], x - 15, height - padding + 18);
+});
+
+ctx.fillStyle = axisColor;
+ctx.font = "bold 16px sans-serif";
+ctx.fillText(label, padding, 24);
+}
+
+function renderTable(filteredRecords) {
+recordList.innerHTML = "";
+if (!filteredRecords.length) {
+recordList.innerHTML = `<tr><td colspan="8">記録がありません</td></tr>`;
+return;
+}
+
+filteredRecords.forEach(record => {
+const originalIndex = records.findIndex(r => r.id === record.id);
+const medText = [record.morningMed ? "朝" : "", record.noonMed ? "昼" : "", record.nightMed ? "夜" : ""].filter(Boolean).join("・") || "なし";
+const symptomsText = (record.symptoms || []).length ? record.symptoms.join("、") : "なし";
+
+const tr = document.createElement("tr");
+tr.className = record.condition === "良い" ? "row-good" : record.condition === "普通" ? "row-normal" : "row-bad";
+tr.innerHTML = `
+<td>${record.date}</td>
+<td>${record.temperature}℃</td>
+<td>${record.condition === "良い" ? '<span class="badge badge-good">良い</span>' : record.condition === "普通" ? '<span class="badge badge-normal">普通</span>' : '<span class="badge badge-bad">悪い</span>'}</td>
+<td>${record.sleep}時間</td>
+<td>${medText}</td>
+<td>${symptomsText}</td>
+<td>${escapeHtml(record.memo || "")}</td>
+<td>
+<div class="actions">
+<button class="btn btn-warning" onclick="editRecord(${originalIndex})">編集</button>
+<button class="btn btn-danger" onclick="deleteRecord(${originalIndex})">削除</button>
+</div>
+</td>
+`;
+recordList.appendChild(tr);
+});
+}
+
+function renderAll() {
+const filtered = getFilteredRecords();
+updateSummary(filtered);
+updateSymptomRanking(filtered);
+renderTable(filtered);
+const chartData = [...filtered].sort((a,b) => a.date.localeCompare(b.date));
+drawLineChart(tempCtx, tempCanvas, chartData, "temperature", "体温グラフ", "#4a90e2");
+drawLineChart(sleepCtx, sleepCanvas, chartData, "sleep", "睡眠時間グラフ", "#8b5cf6");
+}
+
+function exportCSV() {
+const filtered = getFilteredRecords();
+if (!filtered.length) {
+alert("出力するデータがありません。");
+return;
+}
+
+const headers = ["日付","体温","体調","睡眠時間","朝服薬","昼服薬","夜服薬","症状","メモ"];
+const rows = filtered.map(r => [
+r.date, r.temperature, r.condition, r.sleep,
+r.morningMed ? "○" : "", r.noonMed ? "○" : "", r.nightMed ? "○" : "",
+(r.symptoms || []).join(" / "), (r.memo || "").replace(/\n/g, " ")
+]);
+
+const csv = [headers, ...rows]
+.map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(","))
+.join("\n");
+
+const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = url;
+a.download = `health-records-${getTodayString()}.csv`;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
+}
+
+function createBackupData() {
+return {
+appName: "cat-health-app-ultimate",
+version: 1,
+exportedAt: new Date().toISOString(),
+records,
+theme: localStorage.getItem(STORAGE_KEYS.theme) || "light",
+reminderSettings: getReminderSettings(),
+customSymptoms
+};
+}
+
+function downloadBackup() {
+const json = JSON.stringify(createBackupData(), null, 2);
+const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = url;
+a.download = `cat-health-backup-${getTodayString()}.json`;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
+}
+
+function openRestorePicker() {
+restoreFileInput.value = "";
+restoreFileInput.click();
+}
+
+function restoreFromFile(file) {
+const reader = new FileReader();
+reader.onload = (e) => {
+try {
+const data = JSON.parse(e.target.result);
+if (!data || data.appName !== "cat-health-app-ultimate") {
+alert("このバックアップファイルは使えません。");
+return;
+}
+if (!confirm("現在のデータを上書きして復元します。よろしいですか？")) return;
+
+records = Array.isArray(data.records) ? data.records : [];
+customSymptoms = Array.isArray(data.customSymptoms) ? data.customSymptoms : [];
+localStorage.setItem(STORAGE_KEYS.records, JSON.stringify(records));
+localStorage.setItem(STORAGE_KEYS.customSymptoms, JSON.stringify(customSymptoms));
+localStorage.setItem(STORAGE_KEYS.reminder, JSON.stringify(data.reminderSettings || getReminderSettings()));
+localStorage.setItem(STORAGE_KEYS.theme, data.theme || "light");
+
+symptomBox.innerHTML = `
+<label><input type="checkbox" value="頭痛" /> 頭痛</label>
+<label><input type="checkbox" value="だるさ" /> だるさ</label>
+<label><input type="checkbox" value="吐き気" /> 吐き気</label>
+<label><input type="checkbox" value="発熱" /> 発熱</label>
+<label><input type="checkbox" value="咳" /> 咳</label>
+<label><input type="checkbox" value="喉の痛み" /> 喉の痛み</label>
+<label><input type="checkbox" value="腹痛" /> 腹痛</label>
+<label><input type="checkbox" value="めまい" /> めまい</label>
+<label><input type="checkbox" value="不安感" /> 不安感</label>
+<label><input type="checkbox" value="食欲低下" /> 食欲低下</label>
+`;
+loadCustomSymptoms();
+symptomBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener("change", updateCatMessage));
+
+loadTheme();
+loadReminderSettings();
+resetForm();
+renderAll();
+alert("復元しました。");
+} catch {
+alert("JSONの読み込みに失敗しました。");
+}
+};
+reader.readAsText(file, "utf-8");
+}
+
+function clearAllData() {
+if (!confirm("すべてのデータを削除します。よろしいですか？")) return;
+Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+location.reload();
+}
+
+function saveRecord() {
+const date = dateInput.value;
+const temperature = temperatureInput.value;
+const condition = conditionInput.value;
+const sleep = sleepInput.value;
+const memo = memoInput.value.trim();
+
+if (!date || !temperature || !condition || !sleep) {
+alert("日付・体温・体調・睡眠時間は必須です。");
+return;
+}
+
+const record = {
+id: editIndex !== null && records[editIndex] ? records[editIndex].id : Date.now(),
+date,
+temperature: Number(temperature).toFixed(1),
+condition,
+sleep: Number(sleep).toFixed(1),
+morningMed: morningMedInput.checked,
+noonMed: noonMedInput.checked,
+nightMed: nightMedInput.checked,
+symptoms: getSelectedSymptoms(),
+memo
+};
+
+if (editIndex === null) records.push(record);
+else records[editIndex] = record;
+
+records.sort((a,b) => b.date.localeCompare(a.date));
+saveRecords();
+resetForm();
+renderAll();
+catJump();
+}
+
+function editRecord(index) {
+const r = records[index];
+if (!r) return;
+editIndex = index;
+dateInput.value = r.date;
+temperatureInput.value = r.temperature;
+conditionInput.value = r.condition;
+sleepInput.value = r.sleep;
+memoInput.value = r.memo || "";
+morningMedInput.checked = !!r.morningMed;
+noonMedInput.checked = !!r.noonMed;
+nightMedInput.checked = !!r.nightMed;
+setSelectedSymptoms(r.symptoms || []);
+resetQuickCondition();
+formTitle.textContent = "記録を編集する";
+saveBtn.textContent = "更新";
+cancelEditBtn.style.display = "inline-block";
+updateCatMessage();
+$("section-form").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function deleteRecord(index) {
+if (!records[index]) return;
+if (!confirm("この記録を削除しますか？")) return;
+records.splice(index, 1);
+saveRecords();
+if (editIndex === index) resetForm();
+renderAll();
+}
+
+function activateTabById(sectionId) {
+tabButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.target === sectionId));
+}
+
+function setupTabs() {
+tabButtons.forEach(btn => {
+btn.addEventListener("click", () => {
+const target = $(btn.dataset.target);
+if (!target) return;
+target.scrollIntoView({ behavior: "smooth", block: "start" });
+activateTabById(btn.dataset.target);
+});
+});
+}
+
+function updateActiveTabOnScroll() {
+let currentId = "section-form";
+const offset = window.innerHeight * 0.35;
+sections.forEach(section => {
+const rect = section.getBoundingClientRect();
+if (rect.top <= offset) currentId = section.id;
+});
+activateTabById(currentId);
+}
+
+window.addEventListener("beforeinstallprompt", (e) => {
+e.preventDefault();
+deferredPrompt = e;
+installBox.classList.add("show");
+});
+
+installBtn.addEventListener("click", async () => {
+if (!deferredPrompt) return;
+deferredPrompt.prompt();
+await deferredPrompt.userChoice;
+deferredPrompt = null;
+installBox.classList.remove("show");
+});
+
+window.addEventListener("appinstalled", () => installBox.classList.remove("show"));
+
+if ("serviceWorker" in navigator) {
+window.addEventListener("load", () => {
+navigator.serviceWorker.register("./sw.js").catch(console.error);
+});
+}
+
+document.querySelectorAll('input[name="quickCondition"]').forEach(radio => {
+radio.addEventListener("change", (e) => {
+conditionInput.value = e.target.value;
+updateCatMessage();
+});
+});
+
+saveBtn.addEventListener("click", saveRecord);
+cancelEditBtn.addEventListener("click", resetForm);
+todayFillBtn.addEventListener("click", fillToday);
+addSymptomBtn.addEventListener("click", addCustomSymptom);
+themeToggleBtn.addEventListener("click", toggleTheme);
+printBtn.addEventListener("click", () => window.print());
+
+requestNotificationBtn.addEventListener("click", requestNotificationPermission);
+testNotificationBtn.addEventListener("click", () => showLocalNotification("テスト通知", "猫の体調管理アプリの通知テストです。"));
+saveReminderBtn.addEventListener("click", saveReminderSettings);
+
+backupBtn.addEventListener("click", downloadBackup);
+restoreBtn.addEventListener("click", openRestorePicker);
+clearAllBtn.addEventListener("click", clearAllData);
+
+restoreFileInput.addEventListener("change", (e) => {
+const file = e.target.files[0];
+if (file) restoreFromFile(file);
+});
+
+showAllBtn.addEventListener("click", () => {
+monthFilter.value = "";
+conditionFilter.value = "";
+keywordFilter.value = "";
+renderAll();
+});
+
+exportBtn.addEventListener("click", exportCSV);
+sortNewestBtn.addEventListener("click", () => { sortMode = "newest"; renderAll(); });
+sortOldestBtn.addEventListener("click", () => { sortMode = "oldest"; renderAll(); });
+
+[conditionInput, sleepInput, temperatureInput, morningMedInput, noonMedInput, nightMedInput, monthFilter, conditionFilter]
+.forEach(el => el.addEventListener("change", () => { updateCatMessage(); renderAll(); }));
+
+[sleepInput, temperatureInput, keywordFilter].forEach(el => {
+el.addEventListener("input", () => { updateCatMessage(); renderAll(); });
+});
+
+memoInput.addEventListener("input", updateCatMessage);
+
+resetForm();
+loadTheme();
+loadReminderSettings();
+loadCustomSymptoms();
+symptomBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener("change", updateCatMessage));
+renderAll();
+updateCatMessage();
+setupTabs();
+updateActiveTabOnScroll();
+window.addEventListener("scroll", updateActiveTabOnScroll, { passive: true });
+checkReminder();
+setInterval(checkReminder, 30000);
+
+window.editRecord = editRecord;
+window.deleteRecord = deleteRecord;
+</script>
+</body>
+</html>
