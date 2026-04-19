@@ -1,7 +1,7 @@
 {
 "name": "猫の体調管理アプリ Ultimate",
 "short_name": "体調管理",
-"description": "猫つき体調管理アプリの全部盛り版",
+"description": "猫つき体調管理アプリのスマホ対応版",
 "start_url": "./index.html",
 "display": "standalone",
 "background_color": "#f6f9ff",
